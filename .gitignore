@@ -1,0 +1,9 @@
+# Google Cloud CLI
+google-cloud-cli-*.tar.gz
+google-cloud-sdk/
+.gcloud/
+.config/
+
+# Credentials
+*.json
+*-key.json
