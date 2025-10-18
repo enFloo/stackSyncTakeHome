@@ -1,6 +1,6 @@
 # Python Script Executor API
 
-A Flask-based API service that executes arbitrary Python code in a sandboxed environment and returns the result.
+A Flask-based API service that executes arbitrary Python code in a sandboxed environment **using nsjail** and returns the result.
 
 ## Cloud Run URL
 https://script-executor-dh7od47dlq-uc.a.run.app
@@ -23,7 +23,7 @@ docker build -t script-executor .
 docker run -p 8080:8080 script-executor
 ```
 
-Test locally:
+## Test locally:
 ```bash
 curl -X POST http://localhost:8080/execute -H "Content-Type: application/json" -d '{"script": "def main():\n    return {\"sum\": 2 + 2}"}'
 ```
@@ -38,12 +38,9 @@ curl -X POST http://localhost:8080/execute -H "Content-Type: application/json" -
 6. **Error Handling**: Returns appropriate error messages for invalid scripts, timeouts, and execution failures
 7. **Flask Framework**: Simple REST API with /execute endpoint
 8. **Security Implementation**: 
-   - Initial approach attempted to use nsjail as specified in the requirements
-   - Cloud Run's gVisor-based security model restricts the Linux namespace operations (CLONE_NEWUSER, CLONE_NEWPID, etc.) that nsjail requires for process isolation
-   - Disabling these namespaces defeats nsjail's security purpose, providing no meaningful isolation
-   - Current implementation uses Python's resource limits (CPU, memory via setrlimit) and subprocess timeouts as basic sandboxing
-   - Cloud Run's existing gVisor isolation provides container-level security
-   - For production deployment requiring full nsjail support, would recommend GCE or GKE where kernel capabilities are available
+   - Now runs each script inside nsjail, which isolates execution using a restricted filesystem and process limits
+   - Cloud Run’s gVisor-based security model restricts certain Linux namespace operations (CLONE_NEWUSER, CLONE_NEWPID, etc.) that nsjail normally uses
+   - The current configuration disables those restricted namespaces so the jail can run, while Cloud Run provides container-level isolation
 
 ## Time Spent
 Approximately 3 hours including research, implementation, and deployment debugging.
@@ -58,4 +55,7 @@ Approximately 3 hours including research, implementation, and deployment debuggi
 8. 1:30am Having gone over the allotted time I've reverted to the working version w/o nsJail
     From w
 9. I know there's a solution but I'd like to turn in something that works
+
+10. Figured out NsJail error 10/18/25 @ 1:50am-3:20am CST
+
 
